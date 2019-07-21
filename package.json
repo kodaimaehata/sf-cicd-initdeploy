@@ -2,7 +2,10 @@
   "name": "deployinit",
   "version": "0.0.1",
   "description": "script for initializing deploy folder",
-  "main": "DeployInit.js",
+  "files": [
+    "/out"
+  ],
+  "main": "out/DeployInit.js",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
