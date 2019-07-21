@@ -1,0 +1,23 @@
+{
+  "name": "deployinit",
+  "version": "0.0.1",
+  "description": "script for initializing deploy folder",
+  "main": "DeployInit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "start": "node ./out/DeployInit.js"
+  },
+  "author": "kodai",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^12.0.7",
+    "fs-extra": "^8.0.1",
+    "xml2js": "^0.4.19"
+  },
+  "devDependencies": {
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.1"
+  }
+}
