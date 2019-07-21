@@ -11,11 +11,13 @@ const classesFolder = 'classes/';
 const componentsFolder = 'components/';
 const pagesFolder = 'pages/';
 const objectsFolder = 'objects/';
+const staticResoueceFolder = 'staticresources/';
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
 const pagesMember = 'ApexPage';
 const objectMember = 'CustomField';
+const staticResourceMember = 'StaticResource';
 
 function getTargetFiles() : any{
 
@@ -35,7 +37,7 @@ function getTargetFiles() : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember ;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === staticResourceMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -99,6 +101,23 @@ function copyTargetSrc(filesInPkg : Object){
 
         copyTargetFiles(pageList,srcFolder + pagesFolder, deployRoot + srcFolder + pagesFolder);
         console.log('Pages were successfully copied.');
+    }
+
+    if(filesInPkg.hasOwnProperty(staticResourceMember)){
+        console.log('Start Static Resource Copy');
+        fs.mkdirsSync(deployRoot + srcFolder + staticResoueceFolder);
+
+        var fileList : Array<string> = fs.readdirSync(srcFolder + staticResoueceFolder);
+        var itemList : Array<string> = filesInPkg[staticResourceMember];
+
+        var staticResourceList : Array<string> = new Array<string>();
+
+        fileList.forEach(file => {
+            if(itemList.includes(file.split('.')[0])) staticResourceList.push(file); 
+        })
+
+        copyTargetFiles(staticResourceList, srcFolder + staticResoueceFolder, deployRoot + srcFolder + staticResoueceFolder);
+        console.log('Static Resources were successfully copied');
     }
 
 }
