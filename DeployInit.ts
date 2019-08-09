@@ -16,7 +16,8 @@ const staticResoueceFolder = 'staticresources/';
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
 const pagesMember = 'ApexPage';
-const objectMember = 'CustomField';
+const objectMember = 'CustomObject';
+const customFieldMember = 'CustomField';
 const staticResourceMember = 'StaticResource';
 
 function getTargetFiles() : any{
@@ -37,7 +38,7 @@ function getTargetFiles() : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === staticResourceMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -52,11 +53,25 @@ function getTargetFiles() : any{
 
 function copyTargetSrc(filesInPkg : Object){
 
-    if(filesInPkg.hasOwnProperty(objectMember)){
+    if(filesInPkg.hasOwnProperty(objectMember) || filesInPkg.hasOwnProperty(customFieldMember)){
         console.log('Start Object Copy');
         fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
-        var objects : Array<string> = Array.from(new Set(filesInPkg[objectMember]));
-        copyTargetFiles(objects,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
+
+        var objectList : Array<string> = Array<string>();
+        filesInPkg[objectMember].forEach(obj => {
+            objectList.push(obj + '.object');
+        });
+        console.debug(filesInPkg[customFieldMember]);
+
+        filesInPkg[customFieldMember].forEach(field => {
+            objectList.push(field.split('.')[0] + '.object');
+        });
+        console.debug(objectList);
+
+        var objectList = Array.from(new Set(objectList));
+        console.debug(objectList);
+
+        copyTargetFiles(objectList,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
         console.log('Objects were successfully copied');
     }
 

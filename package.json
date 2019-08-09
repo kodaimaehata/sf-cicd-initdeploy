@@ -11,6 +11,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc -p ./",
+    "buildrun": "tsc -p ./ && node ./out/DeployInit.js",
     "watch": "tsc -w -p ./",
     "start": "node ./out/DeployInit.js"
   },
