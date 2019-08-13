@@ -43,13 +43,11 @@ function copyTargetSrc(filesInPkg) {
         console.log('Start Object Copy');
         fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
         var objectList = Array();
-        filesInPkg[objectMember].forEach(obj => {
-            objectList.push(obj + '.object');
-        });
+        if (filesInPkg.hasOwnProperty(objectMember))
+            filesInPkg[objectMember].forEach(obj => { objectList.push(obj + '.object'); });
         console.debug(filesInPkg[customFieldMember]);
-        filesInPkg[customFieldMember].forEach(field => {
-            objectList.push(field.split('.')[0] + '.object');
-        });
+        if (filesInPkg.hasOwnProperty(customFieldMember))
+            filesInPkg[customFieldMember].forEach(field => { objectList.push(field.split('.')[0] + '.object'); });
         console.debug(objectList);
         var objectList = Array.from(new Set(objectList));
         console.debug(objectList);

@@ -6,7 +6,9 @@
     "/out"
   ],
   "main": "out/DeployInit.js",
-  "bin": {"deployinit" : "out/DeployInit.js"},
+  "bin": {
+    "deployinit": "out/DeployInit.js"
+  },
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
