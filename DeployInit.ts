@@ -62,7 +62,11 @@ function copyTargetSrc(filesInPkg : Object){
         filesInPkg[objectMember].forEach(obj => {
             objectList.push(obj + '.object');
         });
-        console.debug(filesInPkg[customFieldMember]);
+        // console.debug(filesInPkg[customFieldMember]);
+
+        copyTargetFiles(objectList,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
+        console.log('Classes were successfully copied.');
+
     }
 
     if(filesInPkg.hasOwnProperty(customFieldMember)){
