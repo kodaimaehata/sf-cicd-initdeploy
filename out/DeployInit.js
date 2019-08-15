@@ -46,7 +46,8 @@ function copyTargetSrc(filesInPkg) {
         filesInPkg[objectMember].forEach(obj => {
             objectList.push(obj + '.object');
         });
-        console.debug(filesInPkg[customFieldMember]);
+        copyTargetFiles(objectList, srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
+        console.log('Classes were successfully copied.');
     }
     if (filesInPkg.hasOwnProperty(customFieldMember)) {
         console.log('Start Object for Custom Field Copy');
@@ -54,7 +55,6 @@ function copyTargetSrc(filesInPkg) {
             fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
         var objectList = Array();
         var fieldsObject = {};
-        //        var fieldList : Array<string> = Array<string>();
         filesInPkg[customFieldMember].forEach(field => {
             var objectName = field.split('.')[0];
             var fieldName = field.split('.')[1];
@@ -64,7 +64,6 @@ function copyTargetSrc(filesInPkg) {
             fieldsObject[objectName].push(fieldName);
         });
         objectList = Array.from(new Set(objectList));
-        console.debug(objectList);
         copyTargetFiles(objectList, srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
         sortOutCustomFields(objectList, fieldsObject, deployRoot + srcFolder + objectsFolder);
         console.log('Objects were successfully copied');
@@ -118,7 +117,12 @@ function copyTargetSrc(filesInPkg) {
 }
 function copyTargetFiles(files, fromFolder, toFolder) {
     files.forEach(targetFile => {
-        fs.copyFileSync(fromFolder + targetFile, toFolder + targetFile);
+        try {
+            fs.copyFileSync(fromFolder + targetFile, toFolder + targetFile);
+        }
+        catch (err) {
+            console.log('Error happened when copying file from ' + fromFolder + targetFile + ' to ' + toFolder + targetFile);
+        }
     });
 }
 function sortOutCustomFields(objectList, fieldsObject, targetFolder) {
@@ -132,44 +136,29 @@ function sortOutCustomFields(objectList, fieldsObject, targetFolder) {
             }
             //get custom object tag
             customFieldObj['CustomObject'] = result.CustomObject;
-            console.log(Object.keys(customFieldObj['CustomObject']));
             Object.keys(customFieldObj['CustomObject']).forEach(key => {
                 if (!(key === 'fields' || key === '$'))
                     delete customFieldObj['CustomObject'][key];
             });
-            // console.log(customFieldObj['CustomObject']);
             var targetFieldList = Array();
             var allFieldList = result.CustomObject.fields;
-            // console.log('******* allFieldList start *********');
-            // console.log(allFieldList);
-            // console.log('******* allFieldList end *********');
-            console.log('******* fieldsObject start *********');
-            console.log(fieldsObject);
-            console.log('******* fieldsObject end *********');
             var fieldInPkgList = fieldsObject[targetFile.split('.')[0]];
             allFieldList.forEach(customField => {
                 if (fieldInPkgList.includes(customField.fullName[0]))
                     targetFieldList.push(customField);
             });
-            console.log('******* targetFieldList start *********');
-            console.log(targetFieldList);
-            console.log('******* targetFieldList end *********');
             //get list of custom field
             customFieldObj['CustomObject']['fields'] = targetFieldList;
             const builder = new xml2js_1.Builder();
+            //build xmlString
             var xmlStr = builder.buildObject(customFieldObj);
-            // console.log(xmlStr);
+            //save xml file
             fs.writeFile(targetFolder + targetFile, xmlStr, function (err) {
                 if (err)
                     console.log('Error happened when writing' + targetFile + ' Error Message : ' + err);
             });
         });
     });
-    //read xml of Object
-    //parse xml to JSON string
-    //build Object from JSON String
-    //sortOut tags required for Custom Field
-    //save XML
 }
 fs.removeSync(deployRoot);
 fs.mkdirsSync(deployRoot);
