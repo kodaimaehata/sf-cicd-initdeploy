@@ -53,22 +53,41 @@ function getTargetFiles() : any{
 
 function copyTargetSrc(filesInPkg : Object){
 
-    if(filesInPkg.hasOwnProperty(objectMember) || filesInPkg.hasOwnProperty(customFieldMember)){
+    if(filesInPkg.hasOwnProperty(objectMember)){
         console.log('Start Object Copy');
         fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
 
         var objectList : Array<string> = Array<string>();
 
-        if(filesInPkg.hasOwnProperty(objectMember)) filesInPkg[objectMember].forEach(obj => {objectList.push(obj + '.object');});
+        filesInPkg[objectMember].forEach(obj => {
+            objectList.push(obj + '.object');
+        });
         console.debug(filesInPkg[customFieldMember]);
+    }
 
-        if(filesInPkg.hasOwnProperty(customFieldMember)) filesInPkg[customFieldMember].forEach(field => {objectList.push(field.split('.')[0] + '.object');});
-        console.debug(objectList);
+    if(filesInPkg.hasOwnProperty(customFieldMember)){
+        console.log('Start Object for Custom Field Copy');
+        if(!fs.existsSync(deployRoot + srcFolder + objectsFolder)) fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
 
-        var objectList = Array.from(new Set(objectList));
+        var objectList : Array<string> = Array<string>();
+        var fieldsObject : Object = {};
+//        var fieldList : Array<string> = Array<string>();
+
+        filesInPkg[customFieldMember].forEach(field => {
+            var objectName = field.split('.')[0];
+            var fieldName = field.split('.')[1];
+
+            objectList.push(objectName + '.object');
+            if(!fieldsObject.hasOwnProperty(objectName)) fieldsObject[objectName] = Array<string>();
+            fieldsObject[objectName].push(fieldName);
+        });
+
+        objectList = Array.from(new Set(objectList));
         console.debug(objectList);
 
         copyTargetFiles(objectList,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
+        sortOutCustomFields(objectList,fieldsObject, deployRoot + srcFolder + objectsFolder );
+
         console.log('Objects were successfully copied');
     }
 
@@ -135,20 +154,82 @@ function copyTargetSrc(filesInPkg : Object){
 }
 
 function copyTargetFiles(files : Array<string>, fromFolder : string , toFolder : string){
-    // console.log('toFolder is ' + toFolder);
-
-    // console.log('contents in files : ' + files);
 
     files.forEach(targetFile => {
-
-        fs.copyFile(fromFolder + targetFile, toFolder + targetFile , (err) => {
-            if(err){
-                console.log('File Copy error.' + err);
-            }
-        })
+        fs.copyFileSync(fromFolder + targetFile, toFolder + targetFile);
     });
 
 }
+
+function sortOutCustomFields(objectList : Array<string>, fieldsObject : Object,targetFolder : string){
+
+    objectList.forEach(targetFile => {
+        var xmlData = fs.readFileSync(targetFolder + targetFile);
+
+        parseString(xmlData, function(err,result){
+            var customFieldObj :Object = {};
+
+            if(err){
+                console.log('Error happened during parsing object xml. Error message : ' + err);
+                return 8;
+            } 
+            //get custom object tag
+            customFieldObj['CustomObject'] = result.CustomObject;
+            console.log(Object.keys(customFieldObj['CustomObject']));
+            Object.keys(customFieldObj['CustomObject']).forEach(key =>{
+                if(!(key === 'fields' || key==='$')) delete customFieldObj['CustomObject'][key];
+            })
+
+            // console.log(customFieldObj['CustomObject']);
+
+            var targetFieldList : Array<any> = Array<any>();
+
+            var allFieldList = result.CustomObject.fields;
+            // console.log('******* allFieldList start *********');
+            // console.log(allFieldList);
+            // console.log('******* allFieldList end *********');
+
+            console.log('******* fieldsObject start *********');
+            console.log(fieldsObject);
+            console.log('******* fieldsObject end *********');
+
+            var fieldInPkgList = fieldsObject[targetFile.split('.')[0]];
+            
+            allFieldList.forEach(customField  =>{
+                if(fieldInPkgList.includes(customField.fullName[0])) targetFieldList.push(customField);
+            })
+
+            console.log('******* targetFieldList start *********');
+            console.log(targetFieldList);
+            console.log('******* targetFieldList end *********');
+
+            //get list of custom field
+            customFieldObj['CustomObject']['fields'] = targetFieldList;
+
+            const builder = new Builder();
+
+            var xmlStr = builder.buildObject(customFieldObj);
+        
+            // console.log(xmlStr);
+        
+            fs.writeFile(targetFolder + targetFile,xmlStr,function(err){
+                if(err) console.log('Error happened when writing' + targetFile + ' Error Message : ' + err);
+            });
+
+        })
+    })
+    //read xml of Object
+
+    //parse xml to JSON string
+
+    //build Object from JSON String
+
+    //sortOut tags required for Custom Field
+
+    //save XML
+
+}
+
 
 fs.removeSync(deployRoot);
 
