@@ -175,13 +175,21 @@ const optionDefinitions = [
         alias: 't',
         type: String,
         defaultValue: ''
+    },
+    {
+        name: 'reuse',
+        alias: 'r',
+        type: Boolean,
+        defaultValue: false
     }
 ];
 const options = commandLineArgs(optionDefinitions);
 const srcRoot = (options.src === '') ? options.src : options.src + '/';
 const deployRoot = (options.target === '') ? options.target : options.target + '/';
-fs.removeSync(deployRoot + deployFolder);
-fs.mkdirsSync(deployRoot + deployFolder);
+if (!options.reuse)
+    fs.removeSync(deployRoot + deployFolder);
+if (!fs.existsSync(deployRoot + deployFolder))
+    fs.mkdirsSync(deployRoot + deployFolder);
 fs.copy(srcRoot + buildFolder, deployRoot + deployFolder + buildFolder, err => {
     if (err)
         return console.error(err);

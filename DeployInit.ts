@@ -230,10 +230,10 @@ const optionDefinitions = [
       defaultValue: ''
     },
     {
-        name: 'clean',
-        alias:  'c',
+        name: 'reuse',
+        alias:  'r',
         type: Boolean,
-        defaultValue: true
+        defaultValue: false
     }
 ];
 
@@ -242,7 +242,7 @@ const options = commandLineArgs(optionDefinitions);
 const srcRoot : string = (options.src === '') ? options.src : options.src + '/';
 const deployRoot : string = (options.target === '')? options.target : options.target + '/';
 
-if(options.clean) fs.removeSync(deployRoot + deployFolder);
+if(!options.reuse) fs.removeSync(deployRoot + deployFolder);
 
 if(!fs.existsSync(deployRoot + deployFolder)) fs.mkdirsSync(deployRoot + deployFolder);
 
