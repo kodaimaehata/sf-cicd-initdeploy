@@ -228,6 +228,12 @@ const optionDefinitions = [
       alias: 't',
       type: String,
       defaultValue: ''
+    },
+    {
+        name: 'clean',
+        alias:  'c',
+        type: Boolean,
+        defaultValue: true
     }
 ];
 
@@ -236,9 +242,9 @@ const options = commandLineArgs(optionDefinitions);
 const srcRoot : string = (options.src === '') ? options.src : options.src + '/';
 const deployRoot : string = (options.target === '')? options.target : options.target + '/';
 
-fs.removeSync(deployRoot + deployFolder);
+if(options.clean) fs.removeSync(deployRoot + deployFolder);
 
-fs.mkdirsSync(deployRoot + deployFolder);
+if(!fs.existsSync(deployRoot + deployFolder)) fs.mkdirsSync(deployRoot + deployFolder);
 
 fs.copy(srcRoot + buildFolder ,deployRoot + deployFolder + buildFolder, err => {
     if(err) return console.error(err);
