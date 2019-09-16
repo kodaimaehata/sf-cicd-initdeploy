@@ -1,9 +1,11 @@
 import * as fs from 'fs-extra';
 import {parseString, Builder} from 'xml2js';
 
+const commandLineArgs = require('command-line-args');
+
 const f = fs;
 
-const deployRoot = 'deploy/';
+const deployFolder = 'deploy/';
 const srcFolder = 'src/';
 const buildFolder = 'build/';
 const packagexml = 'package.xml';
@@ -20,11 +22,11 @@ const objectMember = 'CustomObject';
 const customFieldMember = 'CustomField';
 const staticResourceMember = 'StaticResource';
 
-function getTargetFiles() : any{
+function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
-    fs.mkdirsSync(deployRoot + srcFolder);
+    fs.mkdirsSync(deployRoot + deployFolder + srcFolder);
 
-    var xmlData = fs.readFileSync(srcFolder + packagexml);
+    var xmlData = fs.readFileSync(srcRoot + srcFolder + packagexml);
 
     var filesInPkg : Object = {};
 
@@ -51,11 +53,13 @@ function getTargetFiles() : any{
 
 }
 
-function copyTargetSrc(filesInPkg : Object){
+function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string){
+    var fromSrcFolder : string = srcRoot + srcFolder;
+    var targetSrcFolder : string = deployRoot + deployFolder + srcFolder;
 
     if(filesInPkg.hasOwnProperty(objectMember)){
         console.log('Start Object Copy');
-        fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
+        fs.mkdirsSync(targetSrcFolder + objectsFolder);
 
         var objectList : Array<string> = Array<string>();
 
@@ -63,14 +67,14 @@ function copyTargetSrc(filesInPkg : Object){
             objectList.push(obj + '.object');
         });
 
-        copyTargetFiles(objectList,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
+        copyTargetFiles(objectList,fromSrcFolder + objectsFolder, targetSrcFolder + objectsFolder);
         console.log('Classes were successfully copied.');
 
     }
 
     if(filesInPkg.hasOwnProperty(customFieldMember)){
         console.log('Start Object for Custom Field Copy');
-        if(!fs.existsSync(deployRoot + srcFolder + objectsFolder)) fs.mkdirsSync(deployRoot + srcFolder + objectsFolder);
+        if(!fs.existsSync(targetSrcFolder + objectsFolder)) fs.mkdirsSync(targetSrcFolder + objectsFolder);
 
         var objectList : Array<string> = Array<string>();
         var fieldsObject : Object = {};
@@ -86,15 +90,15 @@ function copyTargetSrc(filesInPkg : Object){
 
         objectList = Array.from(new Set(objectList));
 
-        copyTargetFiles(objectList,srcFolder + objectsFolder, deployRoot + srcFolder + objectsFolder);
-        sortOutCustomFields(objectList,fieldsObject, deployRoot + srcFolder + objectsFolder );
+        copyTargetFiles(objectList,fromSrcFolder + objectsFolder, targetSrcFolder + objectsFolder);
+        sortOutCustomFields(objectList,fieldsObject, targetSrcFolder + objectsFolder );
 
         console.log('Objects were successfully copied');
     }
 
     if(filesInPkg.hasOwnProperty(classMember)){
         console.log('Start Class Copy');
-        fs.mkdirsSync(deployRoot + srcFolder + classesFolder);
+        fs.mkdirsSync(targetSrcFolder + classesFolder);
 
         var classList : Array<string> = new Array<string>();
         filesInPkg[classMember].forEach( cls  => {
@@ -102,13 +106,13 @@ function copyTargetSrc(filesInPkg : Object){
             classList.push(cls + '.cls-meta.xml');
         })       
 
-        copyTargetFiles(classList,srcFolder + classesFolder, deployRoot + srcFolder + classesFolder);
+        copyTargetFiles(classList,fromSrcFolder + classesFolder, targetSrcFolder + classesFolder);
         console.log('Classes were successfully copied.');
     }
 
     if(filesInPkg.hasOwnProperty(componentMember)){
         console.log('Start Component Copy');
-        fs.mkdirsSync(deployRoot + srcFolder + componentsFolder);
+        fs.mkdirsSync(targetSrcFolder + componentsFolder);
 
         var componentList : Array<string> = new Array<string>();
         filesInPkg[componentMember].forEach(cmp => {
@@ -116,13 +120,13 @@ function copyTargetSrc(filesInPkg : Object){
             componentList.push(cmp + '.component-meta.xml');
         });
 
-        copyTargetFiles(componentList,srcFolder + componentsFolder, deployRoot + srcFolder + componentsFolder);
+        copyTargetFiles(componentList,fromSrcFolder + componentsFolder, targetSrcFolder + componentsFolder);
         console.log('Components were successfully copied.');
     }
 
     if(filesInPkg.hasOwnProperty(pagesMember)){
         console.log('Start Page Copy');
-        fs.mkdirsSync(deployRoot + srcFolder + pagesFolder);
+        fs.mkdirsSync(targetSrcFolder + pagesFolder);
 
         var pageList : Array<string> = new Array<string>();
 
@@ -131,15 +135,15 @@ function copyTargetSrc(filesInPkg : Object){
             pageList.push(pg + '.page-meta.xml');            
         });
 
-        copyTargetFiles(pageList,srcFolder + pagesFolder, deployRoot + srcFolder + pagesFolder);
+        copyTargetFiles(pageList,fromSrcFolder + pagesFolder, targetSrcFolder + pagesFolder);
         console.log('Pages were successfully copied.');
     }
 
     if(filesInPkg.hasOwnProperty(staticResourceMember)){
         console.log('Start Static Resource Copy');
-        fs.mkdirsSync(deployRoot + srcFolder + staticResoueceFolder);
+        fs.mkdirsSync(targetSrcFolder + staticResoueceFolder);
 
-        var fileList : Array<string> = fs.readdirSync(srcFolder + staticResoueceFolder);
+        var fileList : Array<string> = fs.readdirSync(fromSrcFolder + staticResoueceFolder);
         var itemList : Array<string> = filesInPkg[staticResourceMember];
 
         var staticResourceList : Array<string> = new Array<string>();
@@ -148,7 +152,7 @@ function copyTargetSrc(filesInPkg : Object){
             if(itemList.includes(file.split('.')[0])) staticResourceList.push(file); 
         })
 
-        copyTargetFiles(staticResourceList, srcFolder + staticResoueceFolder, deployRoot + srcFolder + staticResoueceFolder);
+        copyTargetFiles(staticResourceList, fromSrcFolder + staticResoueceFolder, targetSrcFolder + staticResoueceFolder);
         console.log('Static Resources were successfully copied');
     }
 
@@ -212,19 +216,38 @@ function sortOutCustomFields(objectList : Array<string>, fieldsObject : Object,t
 
 }
 
+const optionDefinitions = [
+    {
+      name: 'src',
+      alias: 's',
+      type: String,
+      defaultValue: ''
+    },
+    {
+      name: 'target',
+      alias: 't',
+      type: String,
+      defaultValue: ''
+    }
+];
 
-fs.removeSync(deployRoot);
+const options = commandLineArgs(optionDefinitions);
 
-fs.mkdirsSync(deployRoot);
+const srcRoot : string = (options.src === '') ? options.src : options.src + '/';
+const deployRoot : string = (options.target === '')? options.target : options.target + '/';
 
-fs.copy(buildFolder ,deployRoot + buildFolder, err => {
+fs.removeSync(deployRoot + deployFolder);
+
+fs.mkdirsSync(deployRoot + deployFolder);
+
+fs.copy(srcRoot + buildFolder ,deployRoot + deployFolder + buildFolder, err => {
     if(err) return console.error(err);
     return console.log('build folder was successfully copied.')
 });
-fs.copy(srcFolder + packagexml , deployRoot + srcFolder + packagexml , err => {
+fs.copy(srcRoot + srcFolder + packagexml , deployRoot + deployFolder + srcFolder + packagexml , err => {
     if(err) return console.error(err);
     return console.log('package.xml was successfully copied');
 });
 
-var filesInPkg = getTargetFiles();
-copyTargetSrc(filesInPkg);
+var filesInPkg = getTargetFiles(srcRoot , deployRoot);
+copyTargetSrc(filesInPkg, srcRoot,deployRoot);
