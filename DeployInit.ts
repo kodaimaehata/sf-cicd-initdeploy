@@ -15,6 +15,8 @@ const pagesFolder = 'pages/';
 const objectsFolder = 'objects/';
 const staticResoueceFolder = 'staticresources/';
 const pageLayoutFolder = 'layouts/'
+const flexiPageFolder = 'flexipages/'
+
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
@@ -23,6 +25,7 @@ const objectMember = 'CustomObject';
 const customFieldMember = 'CustomField';
 const staticResourceMember = 'StaticResource';
 const pageLayoutMember = 'Layout';
+const flexiPageMember = 'FlexiPage';
 
 function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
@@ -42,7 +45,7 @@ function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -159,17 +162,32 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
     }
 
     if(filesInPkg.hasOwnProperty(pageLayoutMember)){
-        console.log('Start Object Copy');
+        console.log('Start PageLayouts Copy');
         fs.mkdirsSync(targetSrcFolder + pageLayoutFolder);
 
-        var objectList : Array<string> = Array<string>();
+        var pageLayoutList : Array<string> = Array<string>();
 
-        filesInPkg[pageLayoutMember].forEach(obj => {
-            objectList.push(obj + '.layout');
+        filesInPkg[pageLayoutMember].forEach(pl => {
+            pageLayoutList.push(pl + '.layout');
         });
 
-        copyTargetFiles(objectList,fromSrcFolder + pageLayoutFolder, targetSrcFolder + pageLayoutFolder);
-        console.log('Classes were successfully copied.');
+        copyTargetFiles(pageLayoutList,fromSrcFolder + pageLayoutFolder, targetSrcFolder + pageLayoutFolder);
+        console.log('PageLayouts were successfully copied.');
+
+    }
+
+    if(filesInPkg.hasOwnProperty(flexiPageMember)){
+        console.log('Start FlexiPages Copy');
+        fs.mkdirsSync(targetSrcFolder + flexiPageFolder);
+
+        var flexiPageList : Array<string> = Array<string>();
+
+        filesInPkg[flexiPageMember].forEach(fp => {
+            flexiPageList.push(fp + '.flexipage');
+        });
+
+        copyTargetFiles(flexiPageList,fromSrcFolder + flexiPageFolder, targetSrcFolder + flexiPageFolder);
+        console.log('FlexiPages were successfully copied.');
 
     }
 
