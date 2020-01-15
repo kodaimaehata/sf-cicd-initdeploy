@@ -15,6 +15,7 @@ const objectsFolder = 'objects/';
 const staticResoueceFolder = 'staticresources/';
 const pageLayoutFolder = 'layouts/';
 const flexiPageFolder = 'flexipages/';
+const triggerFolder = 'triggers/';
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
 const pagesMember = 'ApexPage';
@@ -23,6 +24,7 @@ const customFieldMember = 'CustomField';
 const staticResourceMember = 'StaticResource';
 const pageLayoutMember = 'Layout';
 const flexiPageMember = 'FlexiPage';
+const triggerMember = 'ApexTrigger';
 function getTargetFiles(srcRoot, deployRoot) {
     fs.mkdirsSync(deployRoot + deployFolder + srcFolder);
     var xmlData = fs.readFileSync(srcRoot + srcFolder + packagexml);
@@ -34,7 +36,7 @@ function getTargetFiles(srcRoot, deployRoot) {
         }
         var types = result.Package.types;
         if (types) {
-            var targetTypes = types.filter(t => { return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember; });
+            var targetTypes = types.filter(t => { return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember; });
             targetTypes.forEach(t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -140,6 +142,16 @@ function copyTargetSrc(filesInPkg, srcRoot, deployRoot) {
         });
         copyTargetFiles(flexiPageList, fromSrcFolder + flexiPageFolder, targetSrcFolder + flexiPageFolder);
         console.log('FlexiPages were successfully copied.');
+    }
+    if (filesInPkg.hasOwnProperty(triggerMember)) {
+        console.log('Start FlexiPages Copy');
+        fs.mkdirsSync(targetSrcFolder + triggerFolder);
+        var triggerList = Array();
+        filesInPkg[triggerMember].forEach(fp => {
+            triggerList.push(fp + '.trigger');
+        });
+        copyTargetFiles(triggerList, fromSrcFolder + triggerFolder, targetSrcFolder + triggerFolder);
+        console.log('Triggers were successfully copied.');
     }
 }
 function copyTargetFiles(files, fromFolder, toFolder) {

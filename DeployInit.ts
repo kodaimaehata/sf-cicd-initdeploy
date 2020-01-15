@@ -16,6 +16,7 @@ const objectsFolder = 'objects/';
 const staticResoueceFolder = 'staticresources/';
 const pageLayoutFolder = 'layouts/'
 const flexiPageFolder = 'flexipages/'
+const triggerFolder = 'triggers/'
 
 
 const classMember = 'ApexClass';
@@ -26,6 +27,7 @@ const customFieldMember = 'CustomField';
 const staticResourceMember = 'StaticResource';
 const pageLayoutMember = 'Layout';
 const flexiPageMember = 'FlexiPage';
+const triggerMember = 'ApexTrigger';
 
 function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
@@ -45,7 +47,7 @@ function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -191,6 +193,20 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
 
     }
 
+    if(filesInPkg.hasOwnProperty(triggerMember)){
+        console.log('Start FlexiPages Copy');
+        fs.mkdirsSync(targetSrcFolder + triggerFolder);
+
+        var triggerList : Array<string> = Array<string>();
+
+        filesInPkg[triggerMember].forEach(fp => {
+            triggerList.push(fp + '.trigger');
+        });
+
+        copyTargetFiles(triggerList,fromSrcFolder + triggerFolder, targetSrcFolder + triggerFolder);
+        console.log('Triggers were successfully copied.');
+
+    }
 
 }
 
