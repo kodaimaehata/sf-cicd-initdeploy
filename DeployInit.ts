@@ -75,7 +75,7 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
         });
 
         copyTargetFiles(objectList,fromSrcFolder + objectsFolder, targetSrcFolder + objectsFolder);
-        console.log('Classes were successfully copied.');
+        console.log('Objects were successfully copied.');
 
     }
 
@@ -194,13 +194,14 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
     }
 
     if(filesInPkg.hasOwnProperty(triggerMember)){
-        console.log('Start FlexiPages Copy');
+        console.log('Start Triggers Copy');
         fs.mkdirsSync(targetSrcFolder + triggerFolder);
 
         var triggerList : Array<string> = Array<string>();
 
         filesInPkg[triggerMember].forEach(fp => {
             triggerList.push(fp + '.trigger');
+            triggerList.push(fp + '.trigger-meta.xml');
         });
 
         copyTargetFiles(triggerList,fromSrcFolder + triggerFolder, targetSrcFolder + triggerFolder);
