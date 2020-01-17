@@ -160,16 +160,22 @@ function copyTargetSrc(filesInPkg, srcRoot, deployRoot) {
         console.log('Start Folder/Report Copy');
         fs.mkdirsSync(targetSrcFolder + reportRootFolder);
         var folderSet = new Set();
+        var folderMetaList = new Array();
         var reoprtList = new Array();
         filesInPkg[reportMember].forEach(fp => {
             let elementList = fp.split('/');
-            if (elementList.length === 2)
+            if (elementList.length === 2) {
                 folderSet.add(elementList[0]);
-            reoprtList.push(fp + '.report');
+                reoprtList.push(fp + '.report');
+            }
+            else if (elementList.length === 1) {
+                folderMetaList.push(fp + '-meta.xml');
+            }
         });
         folderSet.forEach(folder => {
             fs.mkdirsSync(targetSrcFolder + reportRootFolder + '/' + folder);
         });
+        copyTargetFiles(folderMetaList, fromSrcFolder + reportRootFolder, targetSrcFolder + reportRootFolder);
         copyTargetFiles(reoprtList, fromSrcFolder + reportRootFolder, targetSrcFolder + reportRootFolder);
         console.log('Folder/Report were successfully copied.');
     }
@@ -181,6 +187,7 @@ function copyTargetFiles(files, fromFolder, toFolder) {
         }
         catch (err) {
             console.log('Error happened when copying file from ' + fromFolder + targetFile + ' to ' + toFolder + targetFile);
+            console.log('error : ', err);
         }
     });
 }
