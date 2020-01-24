@@ -19,6 +19,7 @@ const flexiPageFolder = 'flexipages/';
 const triggerFolder = 'triggers/';
 const reportRootFolder = 'reports/';
 const groupFolder = 'groups/';
+const permissionSetFolder = 'permissionsets/'
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
@@ -31,7 +32,7 @@ const flexiPageMember = 'FlexiPage';
 const triggerMember = 'ApexTrigger';
 const reportMember = 'Report';
 const groupMember = 'Group';
-
+const permissionSetMember = 'PermissionSet';
 
 function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
@@ -51,7 +52,7 @@ function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -214,7 +215,7 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
     }
 
     if(filesInPkg.hasOwnProperty(reportMember)){
-        console.log('Start Folder/Report Copy');
+        console.log('Start Folders/Reports Copy');
         fs.mkdirsSync(targetSrcFolder + reportRootFolder);
 
         var folderSet : Set<string> = new Set<string>();
@@ -239,12 +240,12 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
 
         copyTargetFiles(folderMetaList,fromSrcFolder + reportRootFolder, targetSrcFolder + reportRootFolder);
         copyTargetFiles(reoprtList,fromSrcFolder + reportRootFolder, targetSrcFolder + reportRootFolder);
-        console.log('Folder/Report were successfully copied.');
+        console.log('Folders/Reports were successfully copied.');
 
     }
 
     if(filesInPkg.hasOwnProperty(groupMember)){
-        console.log('Start Group Copy');
+        console.log('Start Groups Copy');
         fs.mkdirsSync(targetSrcFolder + groupFolder);
 
         var groupList : Array<string> = Array<string>();
@@ -255,6 +256,21 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
 
         copyTargetFiles(groupList,fromSrcFolder + groupFolder, targetSrcFolder + groupFolder);
         console.log('Groups were successfully copied.');
+
+    }
+
+    if(filesInPkg.hasOwnProperty(permissionSetMember)){
+        console.log('Start PermissionSets Copy');
+        fs.mkdirsSync(targetSrcFolder + permissionSetFolder);
+
+        var permissionSetList : Array<string> = Array<string>();
+
+        filesInPkg[permissionSetMember].forEach(ps => {
+            permissionSetList.push(ps + '.permissionset');
+        });
+
+        copyTargetFiles(permissionSetList,fromSrcFolder + permissionSetFolder, targetSrcFolder + permissionSetFolder);
+        console.log('PermissionSets were successfully copied.');
 
     }
 
