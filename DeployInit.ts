@@ -20,7 +20,7 @@ const triggerFolder = 'triggers/';
 const reportRootFolder = 'reports/';
 const groupFolder = 'groups/';
 const permissionSetFolder = 'permissionsets/'
-const reportTypeFolder = 'reporttypes/'
+const reportTypeFolder = 'reportTypes/'
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
