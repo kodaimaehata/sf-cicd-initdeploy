@@ -21,6 +21,7 @@ const reportRootFolder = 'reports/';
 const groupFolder = 'groups/';
 const permissionSetFolder = 'permissionsets/'
 const cachePartitionFolder = 'cachePartitions/'
+const reportTypeFolder = 'reportTypes/'
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
@@ -35,7 +36,7 @@ const reportMember = 'Report';
 const groupMember = 'Group';
 const permissionSetMember = 'PermissionSet';
 const cachePartitionMember = 'PlatformCachePartition';
-
+const reportTypeMember = 'ReportType';
 
 function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
@@ -55,7 +56,7 @@ function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember || t.name[0] === cachePartitionMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember || t.name[0] === cachePartitionMember || t.name[0] === reportTypeMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -291,6 +292,21 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
         console.log('CachePartitions were successfully copied.');
 
     }
+    
+    if(filesInPkg.hasOwnProperty(reportTypeMember)){
+        console.log('Start ReportTypes Copy');
+        fs.mkdirsSync(targetSrcFolder + reportTypeFolder);
+
+        var reportTypeList : Array<string> = Array<string>();
+
+        filesInPkg[reportTypeMember].forEach(rt => {
+            reportTypeList.push(rt + '.reportType');
+        });
+
+        copyTargetFiles(reportTypeList,fromSrcFolder + reportTypeFolder, targetSrcFolder + reportTypeFolder);
+        console.log('ReportTypes were successfully copied.');
+
+    }
 
 
 }
@@ -394,5 +410,5 @@ fs.copy(srcRoot + srcFolder + packagexml , deployRoot + deployFolder + srcFolder
     return console.log('package.xml was successfully copied');
 });
 
-var filesInPkg = getTargetFiles(srcRoot , deployRoot);
+var filesInPkg : Object = getTargetFiles(srcRoot , deployRoot);
 copyTargetSrc(filesInPkg, srcRoot,deployRoot);
