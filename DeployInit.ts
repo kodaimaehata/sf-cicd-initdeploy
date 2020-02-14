@@ -20,6 +20,7 @@ const triggerFolder = 'triggers/';
 const reportRootFolder = 'reports/';
 const groupFolder = 'groups/';
 const permissionSetFolder = 'permissionsets/'
+const cachePartitionFolder = 'cachePartitions/'
 
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
@@ -33,6 +34,8 @@ const triggerMember = 'ApexTrigger';
 const reportMember = 'Report';
 const groupMember = 'Group';
 const permissionSetMember = 'PermissionSet';
+const cachePartitionMember = 'PlatformCachePartition';
+
 
 function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 
@@ -52,7 +55,7 @@ function getTargetFiles(srcRoot : string,deployRoot : string ) : any{
 		var types : Array<any> = result.Package.types;
 
         if(types){
-			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember;});
+			var targetTypes : Array<any> = types.filter(t => {return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember || t.name[0] === cachePartitionMember;});
 			targetTypes.forEach( t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -274,6 +277,21 @@ function copyTargetSrc(filesInPkg : Object,srcRoot : string, deployRoot : string
 
     }
 
+    if(filesInPkg.hasOwnProperty(cachePartitionMember)){
+        console.log('Start CachePartitions Copy');
+        fs.mkdirsSync(targetSrcFolder + cachePartitionFolder);
+
+        var cachePartitionList : Array<string> = Array<string>();
+
+        filesInPkg[cachePartitionMember].forEach(cp => {
+            cachePartitionList.push(cp + '.cachePartition');
+        });
+
+        copyTargetFiles(cachePartitionList,fromSrcFolder + cachePartitionFolder, targetSrcFolder + cachePartitionFolder);
+        console.log('CachePartitions were successfully copied.');
+
+    }
+
 
 }
 
@@ -285,6 +303,7 @@ function copyTargetFiles(files : Array<string>, fromFolder : string , toFolder :
         }catch(err){
             console.log('Error happened when copying file from ' +fromFolder + targetFile + ' to ' +  toFolder + targetFile);
             console.log('error : ', err);
+            process.exit(8);
         }
     });
 
