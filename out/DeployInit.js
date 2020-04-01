@@ -21,6 +21,7 @@ const groupFolder = 'groups/';
 const permissionSetFolder = 'permissionsets/';
 const cachePartitionFolder = 'cachePartitions/';
 const reportTypeFolder = 'reportTypes/';
+const customLabelFolder = 'labels/';
 const classMember = 'ApexClass';
 const componentMember = 'ApexComponent';
 const pagesMember = 'ApexPage';
@@ -35,6 +36,7 @@ const groupMember = 'Group';
 const permissionSetMember = 'PermissionSet';
 const cachePartitionMember = 'PlatformCachePartition';
 const reportTypeMember = 'ReportType';
+const customLabelMember = 'CustomLabel';
 function getTargetFiles(srcRoot, deployRoot) {
     fs.mkdirsSync(deployRoot + deployFolder + srcFolder);
     var xmlData = fs.readFileSync(srcRoot + srcFolder + packagexml);
@@ -46,7 +48,7 @@ function getTargetFiles(srcRoot, deployRoot) {
         }
         var types = result.Package.types;
         if (types) {
-            var targetTypes = types.filter(t => { return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember || t.name[0] === cachePartitionMember || t.name[0] === reportTypeMember; });
+            var targetTypes = types.filter(t => { return t.name[0] === classMember || t.name[0] === componentMember || t.name[0] === pagesMember || t.name[0] === objectMember || t.name[0] === customFieldMember || t.name[0] === staticResourceMember || t.name[0] === pageLayoutMember || t.name[0] === flexiPageMember || t.name[0] === triggerMember || t.name[0] === reportMember || t.name[0] === groupMember || t.name[0] === permissionSetMember || t.name[0] === cachePartitionMember || t.name[0] === reportTypeMember || t.name[0] === customLabelMember; });
             targetTypes.forEach(t => {
                 // filesInPkg[t.name[0]] = t.members.toString().split(".")[0];
                 filesInPkg[t.name[0]] = t.members;
@@ -227,6 +229,21 @@ function copyTargetSrc(filesInPkg, srcRoot, deployRoot) {
         copyTargetFiles(reportTypeList, fromSrcFolder + reportTypeFolder, targetSrcFolder + reportTypeFolder);
         console.log('ReportTypes were successfully copied.');
     }
+    if (filesInPkg.hasOwnProperty(customLabelMember)) {
+        console.log('Start CustomLabel Copy');
+        if (!fs.existsSync(targetSrcFolder + customLabelFolder))
+            fs.mkdirsSync(targetSrcFolder + customLabelFolder);
+        var customLabelList = Array();
+        customLabelList.push('CustomLabels.labels');
+        var labelsObject = {};
+        labelsObject['CustomLabels'] = Array();
+        filesInPkg[customLabelMember].forEach(label => {
+            labelsObject['CustomLabels'].push(label);
+        });
+        copyTargetFiles(customLabelList, fromSrcFolder + customLabelFolder, targetSrcFolder + customLabelFolder);
+        sortOutCustomLabels(customLabelList, labelsObject, targetSrcFolder + customLabelFolder);
+        console.log('CustomLabels were successfully copied');
+    }
 }
 function copyTargetFiles(files, fromFolder, toFolder) {
     files.forEach(targetFile => {
@@ -241,32 +258,68 @@ function copyTargetFiles(files, fromFolder, toFolder) {
     });
 }
 function sortOutCustomFields(objectList, fieldsObject, targetFolder) {
-    objectList.forEach(targetFile => {
+    sortOutFields(objectList, fieldsObject, targetFolder, 'CustomObject', 'fields');
+    // objectList.forEach(targetFile => {
+    //     var xmlData = fs.readFileSync(targetFolder + targetFile);
+    //     parseString(xmlData, function(err,result){
+    //         var customFieldObj :Object = {};
+    //         if(err){
+    //             console.log('Error happened during parsing object xml. Error message : ' + err);
+    //             return 8;
+    //         } 
+    //         //get custom object tag
+    //         customFieldObj['CustomObject'] = result.CustomObject;
+    //         Object.keys(customFieldObj['CustomObject']).forEach(key =>{
+    //             if(!(key === 'fields' || key==='$')) delete customFieldObj['CustomObject'][key];
+    //         })
+    //         var targetFieldList : Array<any> = Array<any>();
+    //         var allFieldList = result.CustomObject.fields;
+    //         var fieldInPkgList = fieldsObject[targetFile.split('.')[0]];
+    //         allFieldList.forEach(customField  =>{
+    //             if(fieldInPkgList.includes(customField.fullName[0])) targetFieldList.push(customField);
+    //         })
+    //         //get list of custom field
+    //         customFieldObj['CustomObject']['fields'] = targetFieldList;
+    //         const builder = new Builder();
+    //         //build xmlString
+    //         var xmlStr = builder.buildObject(customFieldObj);
+    //         //save xml file
+    //         fs.writeFile(targetFolder + targetFile,xmlStr,function(err){
+    //             if(err) console.log('Error happened when writing' + targetFile + ' Error Message : ' + err);
+    //         });
+    //     })
+    // })
+}
+function sortOutCustomLabels(customLabelList, labelsObject, targetFolder) {
+    sortOutFields(customLabelList, labelsObject, targetFolder, 'CustomLabels', 'labels');
+}
+function sortOutFields(fileList, fieldsObject, targetFolder, targetParentKey, targetChildKey) {
+    fileList.forEach(targetFile => {
         var xmlData = fs.readFileSync(targetFolder + targetFile);
         xml2js_1.parseString(xmlData, function (err, result) {
-            var customFieldObj = {};
+            var fieldsObj = {};
             if (err) {
                 console.log('Error happened during parsing object xml. Error message : ' + err);
                 return 8;
             }
             //get custom object tag
-            customFieldObj['CustomObject'] = result.CustomObject;
-            Object.keys(customFieldObj['CustomObject']).forEach(key => {
-                if (!(key === 'fields' || key === '$'))
-                    delete customFieldObj['CustomObject'][key];
+            fieldsObj[targetParentKey] = result[targetParentKey];
+            Object.keys(fieldsObj[targetParentKey]).forEach(key => {
+                if (!(key === targetChildKey || key === '$'))
+                    delete fieldsObj[targetParentKey][key];
             });
             var targetFieldList = Array();
-            var allFieldList = result.CustomObject.fields;
+            var allFieldList = result[targetParentKey][targetChildKey];
             var fieldInPkgList = fieldsObject[targetFile.split('.')[0]];
-            allFieldList.forEach(customField => {
-                if (fieldInPkgList.includes(customField.fullName[0]))
-                    targetFieldList.push(customField);
+            allFieldList.forEach(field => {
+                if (fieldInPkgList.includes(field.fullName[0]))
+                    targetFieldList.push(field);
             });
             //get list of custom field
-            customFieldObj['CustomObject']['fields'] = targetFieldList;
+            fieldsObj[targetParentKey][targetChildKey] = targetFieldList;
             const builder = new xml2js_1.Builder();
             //build xmlString
-            var xmlStr = builder.buildObject(customFieldObj);
+            var xmlStr = builder.buildObject(fieldsObj);
             //save xml file
             fs.writeFile(targetFolder + targetFile, xmlStr, function (err) {
                 if (err)
