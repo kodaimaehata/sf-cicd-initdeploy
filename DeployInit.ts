@@ -351,47 +351,6 @@ function copyTargetFiles(files : Array<string>, fromFolder : string , toFolder :
 function sortOutCustomFields(objectList : Array<string>, fieldsObject : Object,targetFolder : string){
 
     sortOutFields(objectList,fieldsObject,targetFolder,'CustomObject','fields');
-    // objectList.forEach(targetFile => {
-    //     var xmlData = fs.readFileSync(targetFolder + targetFile);
-
-    //     parseString(xmlData, function(err,result){
-    //         var customFieldObj :Object = {};
-
-    //         if(err){
-    //             console.log('Error happened during parsing object xml. Error message : ' + err);
-    //             return 8;
-    //         } 
-    //         //get custom object tag
-    //         customFieldObj['CustomObject'] = result.CustomObject;
-    //         Object.keys(customFieldObj['CustomObject']).forEach(key =>{
-    //             if(!(key === 'fields' || key==='$')) delete customFieldObj['CustomObject'][key];
-    //         })
-
-    //         var targetFieldList : Array<any> = Array<any>();
-
-    //         var allFieldList = result.CustomObject.fields;
-
-    //         var fieldInPkgList = fieldsObject[targetFile.split('.')[0]];
-            
-    //         allFieldList.forEach(customField  =>{
-    //             if(fieldInPkgList.includes(customField.fullName[0])) targetFieldList.push(customField);
-    //         })
-
-    //         //get list of custom field
-    //         customFieldObj['CustomObject']['fields'] = targetFieldList;
-
-    //         const builder = new Builder();
-
-    //         //build xmlString
-    //         var xmlStr = builder.buildObject(customFieldObj);
-        
-    //         //save xml file
-    //         fs.writeFile(targetFolder + targetFile,xmlStr,function(err){
-    //             if(err) console.log('Error happened when writing' + targetFile + ' Error Message : ' + err);
-    //         });
-
-    //     })
-    // })
 
 }
 
